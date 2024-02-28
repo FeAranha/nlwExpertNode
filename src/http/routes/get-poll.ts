@@ -2,32 +2,30 @@ import { z } from "zod";
 import { prisma } from "../../lib/prisma";
 import { FastifyInstance } from "fastify";
 
-export async function createPoll(app: FastifyInstance) {
-  app.post('/polls', async (request, reply) => {
+export async function getPoll(app: FastifyInstance) {
+  app.get('/polls/:pollId', async (request, reply) => {
     try {
-      const createPollBody = z.object({
-        title: z.string(),
-        options: z.array(z.string()),
+      const getPollParams = z.object({
+        pollId: z.string().uuid(),
       })
 
-      const { title, options } = createPollBody.parse(request.body)
+      const { pollId } = getPollParams.parse(request.params)
 
-      const poll = await prisma.poll.create({
-        data: {
-          title,
+      const poll = await prisma.poll.findUnique({
+        where: {
+          id: pollId,
+        },
+        include: {
           options: {
-            createMany: {
-              data: options.map((option) => {
-                return {
-                  title: option,
-                }
-              })
+            select: {
+              id: true,
+              title: true,
             }
           }
         }
       })
 
-      return reply.status(201).send({ pollId: poll.id })
+      return reply.send({ poll })
     } catch (error) {
       console.error("Error creating poll:", error);
 
