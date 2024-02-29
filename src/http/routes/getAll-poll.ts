@@ -2,7 +2,6 @@ import { z } from "zod";
 import { prisma } from "../../lib/prisma";
 import { FastifyInstance } from "fastify";
 
-// Definindo o esquema Zod para validar os parâmetros da requisição
 const listPollsParams = z.object({
   filter: z.string().optional(),
 });
